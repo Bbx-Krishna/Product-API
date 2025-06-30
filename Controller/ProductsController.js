@@ -4,7 +4,10 @@ const Product = require("../models/Product");
 module.exports.addProduct = async (req, res) => {
     try {
         console.log("Request Body: ", req.body);
-        const product = await Product.create(req.body);
+        const productData = req.body;
+        productData.product_image = req.file ? req.file.path : "";
+
+        const product = await Product.create(productData);
         res.status(201).json({ message: "Product added successfully", product });
     } catch (err) {
         res.status(400).json({ message: "Error adding product", error: err.message });
@@ -21,7 +24,6 @@ module.exports.getProducts = async (req, res) => {
     }
 };
 
-
 // Get Single Product
 module.exports.getProductById = async (req, res) => {
     try {
@@ -36,7 +38,12 @@ module.exports.getProductById = async (req, res) => {
 // Update Product
 module.exports.updateProduct = async (req, res) => {
     try {
-        const product = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        const updateData = req.body;
+        if (req.file) {
+            updateData.product_image = req.file.path;
+        }
+
+        const product = await Product.findByIdAndUpdate(req.params.id, updateData, { new: true });
         if (!product) return res.status(404).json({ message: "Product not found" });
         res.status(200).json({ message: "Product updated", product });
     } catch (err) {
@@ -54,4 +61,3 @@ module.exports.deleteProduct = async (req, res) => {
         res.status(500).json({ message: "Error deleting product", error: err.message });
     }
 };
-
